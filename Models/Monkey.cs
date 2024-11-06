@@ -26,7 +26,7 @@ public class Monkey
     
     public ushort? SpecialDefense { get; set; }
 
-    public ushort? Speed;
+    public ushort? Speed { get; set; }
     
     public ushort? HealthPoints { get; set; }
     

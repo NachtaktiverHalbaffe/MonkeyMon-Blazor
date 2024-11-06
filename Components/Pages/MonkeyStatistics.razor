@@ -1,0 +1,127 @@
+﻿@page "/monkeys/statistics"
+
+@using Microsoft.EntityFrameworkCore
+@using MonkeyMon_Blazor.Infrastructure
+@using MonkeyMon_Blazor.Models
+
+@inject ApplicationDbContext dbContext
+
+<MudDataGrid T="Monkey" Items="@Monkeys" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="quickFilter"
+             Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Monkeys</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString" Placeholder="Suche" Adornment="Adornment.Start" Immediate="true"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="m => m.Name" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.KnownFrom" Title="Bekannt aus" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.HealthPoints" Title="KP" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.Attack" Title="Angriff" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.Defense" Title="Verteidigung" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.SpecialAttack" Title="Sp. Angriff" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.SpecialDefense" Title="Sp. Verteidigung" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.Speed" Title="Initiative" SortBy="@sortBy"/>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="Monkey"/>
+    </PagerContent>
+
+</MudDataGrid>
+
+@code
+{
+    private IEnumerable<Monkey>? Monkeys;
+
+    private string searchString;
+    private bool sortNameByLength;
+
+    private List<string> _events = new();
+
+    // custom sort by name length
+    private Func<Monkey, object> sortBy => x =>
+    {
+        if (sortNameByLength)
+            return x.Name.Length;
+        else
+            return x.Name;
+    };
+
+    // quick filter - filter globally across multiple columns with the same input
+    private Func<Monkey, bool> quickFilter => monkey =>
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+        {
+            return true;
+        }
+
+        if (monkey.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if ((monkey.Description ?? string.Empty).Contains(searchString, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if ($"{monkey.Attack}".Contains(searchString))
+        {
+            return true;
+        }
+
+        if ($"{monkey.Defense}".Contains(searchString))
+        {
+            return true;
+        }
+
+        if ($"{monkey.SpecialAttack}".Contains(searchString))
+        {
+            return true;
+        }
+
+        if ($"{monkey.SpecialDefense}".Contains(searchString))
+        {
+            return true;
+        }
+
+        if ($"{monkey.SpecialAttack}".Contains(searchString))
+        {
+            return true;
+        }
+
+        if ($"{monkey.Speed}".Contains(searchString))
+        {
+            return true;
+        }
+
+        if ($"{monkey.HealthPoints}".Contains(searchString))
+        {
+            return true;
+        }
+
+        return false;
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Monkeys = await dbContext.Monkeys.ToListAsync();
+    }
+
+    // events
+    void RowClicked(DataGridRowClickEventArgs<Monkey> args)
+    {
+        _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
+    }
+
+    void RowRightClicked(DataGridRowClickEventArgs<Monkey> args)
+    {
+        _events.Insert(0, $"Event = RowRightClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
+    }
+
+    void SelectedItemsChanged(HashSet<Monkey> items)
+    {
+        _events.Insert(0, $"Event = SelectedItemsChanged, Data = {System.Text.Json.JsonSerializer.Serialize(items)}");
+    }
+}

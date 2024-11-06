@@ -34,4 +34,25 @@ app.UseAntiforgery();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+try
+{
+    using var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+    var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    if (app.Environment.IsDevelopment())
+    {
+        // recreate database and fill with seed data
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+    }
+    else
+    {
+        await context.Database.MigrateAsync();
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Failed to update database: {ex}");
+}
+
 app.Run();
