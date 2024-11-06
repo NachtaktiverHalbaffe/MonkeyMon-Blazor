@@ -8,14 +8,15 @@ public class Monkey
     public Guid Id { get; set; } = Guid.NewGuid();
 
     [Required] 
+    [StringLength(50)]
     public string Name { get; set; } = null!;
+
+    [Required] 
+    [StringLength(100)] 
+    public string KnownFrom { get; set; } = null!;
     
-    [Required]
-    public string KnownFrom { get; set; }
-    
+    [StringLength(500)]
     public string? Description { get; set; }
-    
-    public string? Weaknesses { get; set; }
     
     public ushort? Attack { get; set; }
     
@@ -30,4 +31,6 @@ public class Monkey
     public ushort? HealthPoints { get; set; }
     
     // TODO Image and Species
+    
+    // Navigation Properties
 }

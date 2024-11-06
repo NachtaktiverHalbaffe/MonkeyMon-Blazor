@@ -1,14 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Bogus;
 using Microsoft.EntityFrameworkCore;
 using MonkeyMon_Blazor.Infrastructure.EntityValidation;
 using MonkeyMon_Blazor.Models;
+using ValidationException = MonkeyMon_Blazor.Infrastructure.EntityValidation.ValidationException;
+using ValidationResult = System.ComponentModel.DataAnnotations.ValidationResult;
 
 namespace MonkeyMon_Blazor.Infrastructure;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Monkey> Monkeys { get; set; } = null!;
-    
+
     public override int SaveChanges()
     {
         ValidateEntities();
@@ -38,6 +41,27 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
+
+        // Seed data conditionally
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            GenerateSeedData(builder);
+        }
+    }
+
+    private static void GenerateSeedData(ModelBuilder builder)
+    {
+        var monkeys = new Faker<Monkey>()
+            .RuleFor(m => m.Name, f => f.Name.FirstName())
+            .RuleFor(m => m.KnownFrom, f => f.Commerce.ProductName())
+            .RuleFor(m => m.Attack, f => f.Random.UShort(0, 723))
+            .RuleFor(m => m.Defense, f => f.Random.UShort(0, 654))
+            .RuleFor(m => m.SpecialAttack, f => f.Random.UShort(0, 624))
+            .RuleFor(m => m.SpecialDefense, f => f.Random.UShort(0, 654))
+            .RuleFor(m => m.Speed, f => f.Random.UShort(0, 854))
+            .RuleFor(m => m.HealthPoints, f => f.Random.UShort(0, 714))
+            .GenerateBetween(70, 100);
+        builder.Entity<Monkey>().HasData(monkeys);
     }
 
     private void ValidateEntities()
@@ -59,7 +83,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         if (errors.Count > 0)
         {
-            throw new ValidationException(errors.ToString());
+            throw new ValidationException(errors);
         }
     }
 }
