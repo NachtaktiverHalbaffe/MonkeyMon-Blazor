@@ -1,8 +1,14 @@
+using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using MonkeyMon_Blazor.Components;
+using MonkeyMon_Blazor.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("EFUnitOfWork"));
+});
 // Add MudBlazor services
 builder.Services.AddMudServices();
 
