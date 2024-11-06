@@ -1,6 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using Bogus;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MonkeyMon_Blazor.Infrastructure.EntityValidation;
 using MonkeyMon_Blazor.Models;
 using ValidationException = MonkeyMon_Blazor.Infrastructure.EntityValidation.ValidationException;
@@ -11,6 +14,8 @@ namespace MonkeyMon_Blazor.Infrastructure;
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
 {
     public DbSet<Monkey> Monkeys { get; set; } = null!;
+
+    public DbSet<Species> Species { get; set; } = null!;
 
     public override int SaveChanges()
     {
@@ -41,6 +46,32 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
+
+        builder.Entity<Species>(options =>
+        {
+            var dictValueConverter = new ValueConverter<IDictionary<string, string>, string>(
+                m => JsonSerializer.Serialize(m, JsonSerializerOptions.Default),
+                s => string.IsNullOrWhiteSpace(s)
+                    ? new Dictionary<string, string>()
+                    : JsonSerializer.Deserialize<IDictionary<string, string>>(s, JsonSerializerOptions.Default) ??
+                      new Dictionary<string, string>()
+            );
+
+            var stringArrayValueConverter = new ValueConverter<ICollection<string>, string>(
+                l => string.Join(",", l),
+                s => string.IsNullOrWhiteSpace(s)
+                    ? new Collection<string>()
+                    : new Collection<string>(s.Split(new[] { ',' }).ToArray())
+            );
+
+            options
+                .Property(s => s.Characteristics)
+                .HasConversion(dictValueConverter);
+            options.Property(s => s.Taxonomy)
+                .HasConversion(dictValueConverter);
+            options.Property(s => s.Locations).HasConversion(stringArrayValueConverter);
+            ;
+        });
 
         // Seed data conditionally
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")

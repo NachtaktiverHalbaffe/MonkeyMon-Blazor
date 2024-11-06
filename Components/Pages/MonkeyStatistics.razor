@@ -6,6 +6,8 @@
 
 @inject ApplicationDbContext dbContext
 
+<PageTitle>Monkey Statistiken</PageTitle>
+
 <MudDataGrid T="Monkey" Items="@Monkeys" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="quickFilter"
              Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
     <ToolBarContent>

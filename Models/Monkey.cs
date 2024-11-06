@@ -30,7 +30,9 @@ public class Monkey
     
     public ushort? HealthPoints { get; set; }
     
+    public Species? Species { get; set; }
     // TODO Image and Species
     
     // Navigation Properties
+    public Guid? SpeciesId { get; set; }
 }
