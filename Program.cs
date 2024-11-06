@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using MonkeyMon_Blazor.Components;
 using MonkeyMon_Blazor.Infrastructure;
+using MonkeyMon_Blazor.Properties;
+using MonkeyMon_Blazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("EFUnitOfWork"));
 });
+
+builder.Services.Configure<SpeciesApiSettings>(builder.Configuration.GetSection(nameof(SpeciesApiSettings)));
+builder.Services.AddTransient<SpeciesService>();
+builder.Services.AddHttpClient<SpeciesService>(configureClient: client =>
+{
+    var server = builder.Configuration.GetSection(nameof(SpeciesApiSettings)).GetValue<string?>("Url")!;
+    var token = builder.Configuration.GetSection(nameof(SpeciesApiSettings)).GetValue<string?>("ApiToken")!;
+
+    client.BaseAddress = new Uri(server);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("X-API-key", token);
+});
+
 // Add MudBlazor services
 builder.Services.AddMudServices();
 
