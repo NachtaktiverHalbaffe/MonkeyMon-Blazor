@@ -1,0 +1,68 @@
+﻿@page "/species/statistics"
+@using System.Text.Json
+@using Microsoft.EntityFrameworkCore
+@using MonkeyMon_Blazor.Infrastructure
+@using MonkeyMon_Blazor.Infrastructure.Algorithms
+@using MonkeyMon_Blazor.Models
+@inject ApplicationDbContext dbContext
+
+<PageTitle>Spezies Statistiken</PageTitle>
+
+<MudDataGrid T="Species" Items="@species" SortMode="SortMode.Multiple" Filterable="true"
+             Hideable="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Spezies</MudText>
+        <MudSpacer/>
+        <MudTextField @bind-Value="searchString" Placeholder="Suche" Adornment="Adornment.Start" Immediate="true"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"/>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="m => m.Name" Title="Name" SortBy="sortByName"/>
+        <PropertyColumn Property="@(m => string.Join(", ", m.Locations))" Title="Orte" SortBy="sortByLocation"/>
+        <PropertyColumn Property="m => m.Taxonomy" Title="Taxonomie" Style="max-height: 100px;overflow: auto;">
+            <CellTemplate >
+                <div style="max-height: 6.25rem; overflow: auto">
+                    @foreach (var taxonomyKey in context.Item.Taxonomy.Keys)
+                    {
+                    <MudText>
+                        <b>@(taxonomyKey.Capitalize().Replace("_", " ")):</b> @(context.Item.Taxonomy[taxonomyKey])
+                    </MudText>
+                    }
+                </div>
+           
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="m => m.Characteristics" Title="Charakteristiken" Style="max-height: 100px;overflow: auto;">
+            <CellTemplate>
+                <div style="max-height: 6.25rem; overflow: auto">
+                    @foreach (var characteristicsKey in context.Item.Characteristics.Keys)
+                    {
+                    <MudText>
+                        <b>@(characteristicsKey.Capitalize().Replace("_", " ")):</b> @(context.Item.Characteristics[characteristicsKey])
+                    </MudText>
+                    }
+                </div>
+        
+            </CellTemplate>
+        </PropertyColumn>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="Species"/>
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private ICollection<Species>? species;
+    private string searchString = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitializedAsync();
+        species = await dbContext.Species.ToListAsync();
+    }
+
+    private Func<Species, object> sortByName => m => m.Name;
+
+    private Func<Species, object> sortByLocation => m => string.Join(',', m.Locations.Order());
+
+}

@@ -9,7 +9,7 @@
 <PageTitle>Monkey Statistiken</PageTitle>
 
 <MudDataGrid T="Monkey" Items="@Monkeys" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="quickFilter"
-             Hideable="true" RowClick="@RowClicked" RowContextMenuClick="RowRightClicked" SelectedItemsChanged="@SelectedItemsChanged">
+             Hideable="true">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Monkeys</MudText>
         <MudSpacer />
@@ -17,14 +17,15 @@
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
     </ToolBarContent>
     <Columns>
-        <PropertyColumn Property="m => m.Name" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.KnownFrom" Title="Bekannt aus" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.HealthPoints" Title="KP" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.Attack" Title="Angriff" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.Defense" Title="Verteidigung" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.SpecialAttack" Title="Sp. Angriff" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.SpecialDefense" Title="Sp. Verteidigung" SortBy="@sortBy"/>
-        <PropertyColumn Property="m => m.Speed" Title="Initiative" SortBy="@sortBy"/>
+        <PropertyColumn Property="m => m.Name" Sortable="true"/>
+        <PropertyColumn Property="m => m.KnownFrom" Title="Bekannt aus" Sortable="true"/>
+        <PropertyColumn Property="m => (m.Species ?? new Species()).Name" Title="Spezies" Sortable="true"/>
+        <PropertyColumn Property="m => m.HealthPoints" Title="KP" Sortable="true"/>
+        <PropertyColumn Property="m => m.Attack" Title="Angriff" Sortable="true"/>
+        <PropertyColumn Property="m => m.Defense" Title="Verteidigung" Sortable="true"/>
+        <PropertyColumn Property="m => m.SpecialAttack" Title="Sp. Angriff" Sortable="true"/>
+        <PropertyColumn Property="m => m.SpecialDefense" Title="Sp. Verteidigung" Sortable="true"/>
+        <PropertyColumn Property="m => m.Speed" Title="Initiative" Sortable="true"/>
     </Columns>
     <PagerContent>
         <MudDataGridPager T="Monkey"/>
@@ -37,18 +38,11 @@
     private IEnumerable<Monkey>? Monkeys;
 
     private string searchString;
-    private bool sortNameByLength;
-
-    private List<string> _events = new();
 
     // custom sort by name length
-    private Func<Monkey, object> sortBy => x =>
-    {
-        if (sortNameByLength)
-            return x.Name.Length;
-        else
-            return x.Name;
-    };
+    private Func<Monkey, object> sortByName => x => x.Name;
+    private Func<Monkey, object> sortByKnownFrom => x => x.Name;
+    
 
     // quick filter - filter globally across multiple columns with the same input
     private Func<Monkey, bool> quickFilter => monkey =>
@@ -109,21 +103,5 @@
     protected override async Task OnInitializedAsync()
     {
         Monkeys = await dbContext.Monkeys.ToListAsync();
-    }
-
-    // events
-    void RowClicked(DataGridRowClickEventArgs<Monkey> args)
-    {
-        _events.Insert(0, $"Event = RowClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
-    }
-
-    void RowRightClicked(DataGridRowClickEventArgs<Monkey> args)
-    {
-        _events.Insert(0, $"Event = RowRightClick, Index = {args.RowIndex}, Data = {System.Text.Json.JsonSerializer.Serialize(args.Item)}");
-    }
-
-    void SelectedItemsChanged(HashSet<Monkey> items)
-    {
-        _events.Insert(0, $"Event = SelectedItemsChanged, Data = {System.Text.Json.JsonSerializer.Serialize(items)}");
     }
 }
