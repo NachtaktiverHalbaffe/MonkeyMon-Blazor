@@ -24,6 +24,12 @@ builder.Services.AddHttpClient<SpeciesService>(configureClient: client =>
     client.DefaultRequestHeaders.Add("X-API-key", token);
 });
 
+builder.Services.AddTransient<PokeApiService>();
+builder.Services.AddHttpClient<PokeApiService>(configureClient: client =>
+{
+    client.BaseAddress = new Uri("https://pokeapi.co/api/v2/");
+});
+
 // Add MudBlazor services
 builder.Services.AddMudServices();
 

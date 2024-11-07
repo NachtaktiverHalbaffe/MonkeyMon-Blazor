@@ -17,6 +17,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Species> Species { get; set; } = null!;
 
+    public DbSet<Pokemon> PokedexEntries { get; set; } = null!;
+
+    public DbSet<MonMoves> MonMoves { get; set; } = null!;
+
+    public DbSet<MonType> MonTypes { get; set; } = null!;
+
+    public DbSet<PokemonSpriteResponse> PokemonSprites { get; set; } = null!;
     public override int SaveChanges()
     {
         ValidateEntities();
