@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MonkeyMon_Blazor.Infrastructure;
+using MonkeyMon_Blazor.Infrastructure.Algorithms;
 using MonkeyMon_Blazor.Models;
 using MonkeyMon_Blazor.Properties;
 
@@ -50,15 +51,32 @@ public class SpeciesService(ApplicationDbContext dbContext, HttpClient client, I
 
         var responseContent = await response.Content.ReadAsStreamAsync();
 
-        var deserialzedResponse = await JsonSerializer.DeserializeAsync<SpeciesApiResponse>(responseContent);
+        var deserialzedResponse = await JsonSerializer.DeserializeAsync<SpeciesApiResponse[]>(responseContent);
 
-        return deserialzedResponse is not null
+        var bestScore = deserialzedResponse?.MaxBy(apiResponse => LevenshteinDistance.Calculate(name, apiResponse.Name));
+        // int bestSimilarityScore = 1000;
+        //
+        // SpeciesApiResponse nearestElement;
+        // foreach (var speciesApiResponse in deserialzedResponse)
+        // {
+        //
+        // }
+        // return deserialzedResponse is not null
+        //     ? new Species
+        //     {
+        //         Name = deserialzedResponse.Name,
+        //         Locations = deserialzedResponse.Locations,
+        //         Characteristics = deserialzedResponse.Characteristics,
+        //         Taxonomy = deserialzedResponse.Taxonomy
+        //     }
+        //     : null;
+        return bestScore is not null
             ? new Species
             {
-                Name = deserialzedResponse.Name,
-                Locations = deserialzedResponse.Locations,
-                Characteristics = deserialzedResponse.Characteristics,
-                Taxonomy = deserialzedResponse.Taxonomy
+                Name = bestScore.Name,
+                Locations = bestScore.Locations,
+                Characteristics = bestScore.Characteristics,
+                Taxonomy = bestScore.Taxonomy
             }
             : null;
     }

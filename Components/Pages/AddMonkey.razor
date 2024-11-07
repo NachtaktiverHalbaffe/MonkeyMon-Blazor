@@ -1,0 +1,69 @@
+﻿@page "/monkeys/new"
+@using MonkeyMon_Blazor.Infrastructure
+@using MonkeyMon_Blazor.Models
+@using MonkeyMon_Blazor.Services
+@inject SpeciesService speciesService
+@inject ApplicationDbContext dbContext
+
+
+<PageTitle>Neuer Monkey</PageTitle>
+<MudForm Model="@model">
+    <MudStepper OnPreviewInteraction="OnPreviewInteraction">
+        <MudStep Title="Persönliche Informationen zum Monkey">
+            <MudTextField @bind-Value="@model.Name" For="@(() => model.Name)" Label="Name" Variant="Variant.Outlined"/>
+            <MudTextField @bind-Value="@speciesName" For="@(() => speciesName)" Label="Spezies" Variant="Variant.Outlined"/>
+            <MudTextField @bind-Value="@model.KnownFrom" For="@(() => model.KnownFrom)" Label="Bekannt aus" Variant="Variant.Outlined"/>
+            <MudTextField @bind-Value="@model.Description" For="@(() => model.Description)" Label="Beschreibung" Lines="5" Variant="Variant.Outlined"/>
+        </MudStep>
+        <MudStep Title="Kampf-Stats">
+            <MudNumericField @bind-Value="@model.HealthPoints" For="@(() => model.HealthPoints)" Label="HP" Variant="Variant.Outlined"/>
+            <MudNumericField @bind-Value="@model.Attack" For="@(() => model.Attack)" Label="Angriff" Variant="Variant.Outlined"/>
+            <MudNumericField @bind-Value="@model.Defense" For="@(() => model.Defense)" Label="Verteidigung" Variant="Variant.Outlined"/>
+            <MudNumericField @bind-Value="@model.SpecialAttack" For="@(() => model.SpecialAttack)" Label="Sp. Angriff" Variant="Variant.Outlined"/>
+            <MudNumericField @bind-Value="@model.SpecialDefense" For="@(() => model.SpecialDefense)" Label="Sp. Verteidigung" Variant="Variant.Outlined"/>
+            <MudNumericField @bind-Value="@model.Speed" For="@(() => model.Speed)" Label="Initiative" Variant="Variant.Outlined"/>
+        </MudStep>
+        <MudStep Title="Bild & Speichern"></MudStep>
+    </MudStepper>
+</MudForm>
+
+
+@code {
+    private Monkey model = new Monkey();
+    private string speciesName = string.Empty;
+
+    private async Task OnPreviewInteraction(StepperInteractionEventArgs arg)
+    {
+        if (arg.Action == StepAction.Complete)
+        {
+            switch (arg.StepIndex)
+            {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    await HandleSubmit();
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        var species = await speciesService.FetchSpecies(speciesName);
+
+        if (species is not null)
+        {
+            await dbContext.Species.AddAsync(species);
+            model.SpeciesId = species.Id;
+        }
+
+        await dbContext.Monkeys.AddAsync(model);
+
+        await dbContext.SaveChangesAsync();
+    }
+
+}
