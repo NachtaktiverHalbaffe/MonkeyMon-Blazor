@@ -55,24 +55,24 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
+        
+        var dictValueConverter = new ValueConverter<IDictionary<string, string>, string>(
+            m => JsonSerializer.Serialize(m, JsonSerializerOptions.Default),
+            s => string.IsNullOrWhiteSpace(s)
+                ? new Dictionary<string, string>()
+                : JsonSerializer.Deserialize<IDictionary<string, string>>(s, JsonSerializerOptions.Default) ??
+                  new Dictionary<string, string>()
+        );
+
+        var stringArrayValueConverter = new ValueConverter<ICollection<string>, string>(
+            l => string.Join(",", l),
+            s => string.IsNullOrWhiteSpace(s)
+                ? new Collection<string>()
+                : new Collection<string>(s.Split(new[] { ',' }).ToArray())
+        );
 
         builder.Entity<Species>(options =>
         {
-            var dictValueConverter = new ValueConverter<IDictionary<string, string>, string>(
-                m => JsonSerializer.Serialize(m, JsonSerializerOptions.Default),
-                s => string.IsNullOrWhiteSpace(s)
-                    ? new Dictionary<string, string>()
-                    : JsonSerializer.Deserialize<IDictionary<string, string>>(s, JsonSerializerOptions.Default) ??
-                      new Dictionary<string, string>()
-            );
-
-            var stringArrayValueConverter = new ValueConverter<ICollection<string>, string>(
-                l => string.Join(",", l),
-                s => string.IsNullOrWhiteSpace(s)
-                    ? new Collection<string>()
-                    : new Collection<string>(s.Split(new[] { ',' }).ToArray())
-            );
-
             options
                 .Property(s => s.Characteristics)
                 .HasConversion(dictValueConverter);
@@ -80,10 +80,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasConversion(dictValueConverter);
             options.Property(s => s.Locations).HasConversion(stringArrayValueConverter);
         });
+        
         builder.Entity<MonType>()
             .HasOne(mt => mt.MonTypeRelation)
             .WithOne(mtr => mtr.MonType)
             .HasForeignKey<MonTypeRelation>(mtr => mtr.MonTypeId);
+
+        builder.Entity<MonMove>().Property(mm => mm.EffectEntries).HasConversion(stringArrayValueConverter);
 
         // Seed data conditionally
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")

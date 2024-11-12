@@ -49,17 +49,19 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
                     pokemon.Types.Add(monType);
                 }
 
-                GeneratePokemonStats(pokemonResponse.Stats, pokemon);
-
-                var pokemonSprites = GeneratePokemonSprite(pokemonResponse.SpritesResponse);
-                pokemonSprites.PokemonId = pokemon.Id;
-                await dbContext.PokemonSprites.AddAsync(pokemonSprites, cancellationToken);
-
                 var pokemonMoves = await GenerateMonMoves(pokemonResponse.Moves, cancellationToken);
                 foreach (var pokemonMove in pokemonMoves)
                 {
                     pokemon.Moves.Add(pokemonMove);
                 }
+
+                (pokemon.Name, pokemon.Description) = await GenerateNameAndDescription(pokemonResponse.Species);
+                
+                GeneratePokemonStats(pokemonResponse.Stats, pokemon);
+
+                var pokemonSprites = GeneratePokemonSprite(pokemonResponse.SpritesResponse);
+                pokemonSprites.PokemonId = pokemon.Id;
+                await dbContext.PokemonSprites.AddAsync(pokemonSprites, cancellationToken);
 
                 await dbContext.Pokemons.AddAsync(pokemon, cancellationToken);
             }
@@ -149,7 +151,9 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         var monTypes = new Collection<MonType>();
         foreach (var type in types)
         {
-            var existingType = await dbContext.MonTypes.SingleOrDefaultAsync(t => t.Name.ToLower().Contains(type.Name.ToLower()), cancellationToken);
+            var existingType =
+                await dbContext.MonTypes.SingleOrDefaultAsync(t => t.Name.ToLower().Contains(type.Name.ToLower()),
+                    cancellationToken);
 
             if (existingType is not null)
             {
@@ -202,40 +206,39 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         };
     }
 
-    private async Task<ICollection<MonMove>> GenerateMonMoves(List<MoveResponse> movesResponse,
+    private async Task<ICollection<MonMove>> GenerateMonMoves(List<PokemonMoveResponse> movesResponse,
         CancellationToken cancellationToken)
     {
         var moves = new Collection<MonMove>();
 
         foreach (var moveResponse in movesResponse.ToList())
         {
-            if (moveResponse.Id == 0)
-            {
-                continue;
-            }
 
             var existingMove =
-                await dbContext.MonMoves.SingleOrDefaultAsync(move => move.Id == moveResponse.Id, cancellationToken);
+                await dbContext.MonMoves.SingleOrDefaultAsync(move => move.Name.ToLower() == moveResponse.Move.Name.ToLower(), cancellationToken);
             if (existingMove is null)
             {
+                var fetchedMove = await pokeApiService.GetResourceAsync<MoveResponse>(moveResponse.Move.Name, cancellationToken);
                 var newMove = new MonMove
                 {
-                    Id = moveResponse.Id,
-                    Name = moveResponse.Name,
-                    Accuracy = moveResponse.Accuracy,
-                    EffectChance = moveResponse.EffectChance,
-                    Pp = moveResponse.Pp,
-                    Priority = moveResponse.Priority,
-                    Power = moveResponse.Power,
-                    DamageClass = moveResponse.DamageClass.Name,
-                    Description = moveResponse.FlavorTextEntries.First(entry => entry.Language.Name == "de").FlavorText
+                    Id = fetchedMove.Id,
+                    Name = fetchedMove.Name,
+                    Accuracy = fetchedMove.Accuracy,
+                    EffectChance = fetchedMove.EffectChance,
+                    Pp = fetchedMove.Pp,
+                    Priority = fetchedMove.Priority,
+                    Power = fetchedMove.Power,
+                    DamageClass = fetchedMove.DamageClass.Name,
+                    Description = fetchedMove.FlavorTextEntries.FirstOrDefault(entry => entry.Language.Name == "de")?.FlavorText ?? string.Empty
                 };
 
-                var typList = await _GenerateMonType(
-                    moveResponse.Type.Name,
+                var type = await _GenerateMonType(
+                    fetchedMove.Type.Name,
                     cancellationToken);
-                newMove.TypeId = typList.Id;
+                newMove.Type = type;
 
+                await dbContext.MonMoves.AddAsync(newMove, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
                 moves.Add(newMove);
             }
             else
@@ -245,5 +248,19 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         }
 
         return moves;
+    }
+
+    private async Task<(string name, string description )> GenerateNameAndDescription(
+        PokeApiNamedApiResource<PokemonSpeciesResponse> species)
+    {
+        var fetchedSpecies = await pokeApiService.GetResourceAsync<PokemonSpeciesResponse>(species.Name);
+
+        var name = fetchedSpecies.Names
+            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))?.Name ?? "";
+
+        var description = fetchedSpecies.FlavorTextEntries
+            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))?.FlavorText ?? "";
+
+        return (name, description);
     }
 }

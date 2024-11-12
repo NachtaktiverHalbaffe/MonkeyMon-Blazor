@@ -354,8 +354,7 @@ public class PokemonResponse : PokeApiNamedApiResource
     /// A list of moves along with learn methods and level
     /// details pertaining to specific version groups.
     /// </summary>
-    [JsonPropertyName("moves")]
-    public List<MoveResponse> Moves { get; set; }
+    public List<PokemonMoveResponse> Moves { get; set; }
 
     /// <summary>
     /// A set of sprites used to depict this Pokémon in the game.
@@ -378,6 +377,19 @@ public class PokemonResponse : PokeApiNamedApiResource
     /// </summary>
     public List<PokemonTypeResponse> Types { get; set; }
 }
+
+
+/// <summary>
+/// A reference to a move and the version information
+/// </summary>
+public class PokemonMoveResponse
+{
+    /// <summary>
+    /// The move the Pokémon can learn.
+    /// </summary>
+    public PokeApiNamedApiResource<MoveResponse> Move { get; set; }
+}
+
 
 /// <summary>
 /// A Pokémon ability

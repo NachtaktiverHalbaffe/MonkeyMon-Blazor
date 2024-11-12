@@ -19,14 +19,14 @@ public class MonType
     public MonTypeRelation? MonTypeRelation { get; set; }
 
     // Navigation Properties
-    
+
     /// <summary>
     /// A list of details of Pokémon that have this type.
     /// </summary>
-    public ICollection<Pokemon> Pokemon { get; set; }
+    public ICollection<Pokemon> Pokemon { get; set; } = [];
 
     /// <summary>
     /// A list of moves that have this type.
     /// </summary>
-    public ICollection<MonMove> Moves { get; set; }
+    public ICollection<MonMove> Moves { get; set; } = [];
 }

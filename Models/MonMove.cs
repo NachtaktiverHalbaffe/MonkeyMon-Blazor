@@ -68,7 +68,4 @@ public class MonMove
     /// The elemental type of this move.
     /// </summary>
     public MonType Type { get; set; }
-    
-    // Navigation Properties
-    public int TypeId { get; set; }
 }

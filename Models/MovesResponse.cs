@@ -60,32 +60,10 @@ namespace MonkeyMon_Blazor.Models
         public PokeApiNamedApiResource<MoveDamageClassResponse> DamageClass { get; set; }
 
         /// <summary>
-        /// The effect of this move listed in different languages.
-        /// </summary>
-        [JsonPropertyName("effect_entries")]
-        public List<VerboseEffectResponse> EffectEntries { get; set; }
-
-        /// <summary>
-        /// The list of previous effects this move has had across version
-        /// groups of the games.
-        /// </summary>
-        [JsonPropertyName("effect_changes")]
-        public List<AbilityEffectChangeResponse> EffectChanges { get; set; }
-
-        /// <summary>
         /// The flavor text of this move listed in different languages.
         /// </summary>
         [JsonPropertyName("flavor_text_entries")]
         public List<MoveFlavorTextResponse> FlavorTextEntries { get; set; }
-        
-        /// <summary>The pokemon that learn this move.</summary>
-        [JsonPropertyName("learned_by_pokemon")]
-        public List<PokeApiNamedApiResource> LearnedByPokemon { get; set; }
-
-        /// <summary>
-        /// Metadata about this move
-        /// </summary>
-        public MoveMetaDataResponse Meta { get; set; }
 
         /// <summary>
         /// The name of this resource listed in different languages.
