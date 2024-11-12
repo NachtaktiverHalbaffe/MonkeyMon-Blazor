@@ -5,16 +5,10 @@ using MonkeyMon_Blazor.Models;
 
 namespace MonkeyMon_Blazor.Services;
 
-public class FetchPokeApiStartupTask : IHostedService
+public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) : IHostedService
 {
     private PokeApiService pokeApiService = null!;
     private ApplicationDbContext dbContext = null!;
-    private readonly IServiceScopeFactory serviceScopeFactory;
-
-    public FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory)
-    {
-        this.serviceScopeFactory = serviceScopeFactory;
-    }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

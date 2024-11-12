@@ -1,0 +1,50 @@
+﻿@page "/pokemon/statistics"
+
+@using Microsoft.EntityFrameworkCore
+@using MonkeyMon_Blazor.Infrastructure
+@using MonkeyMon_Blazor.Models
+
+@inject ApplicationDbContext dbContext
+
+<PageTitle>Monkey Statistiken</PageTitle>
+
+<MudDataGrid T="Pokemon" Items="@Pokemons" SortMode="SortMode.Multiple" Filterable="true" 
+             Hideable="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Pokemons</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="@searchString" Placeholder="Suche" Adornment="Adornment.Start" Immediate="true"
+                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="m => m.Name" Sortable="true"/>
+        <PropertyColumn Property="@(p => string.Join(" ,", p.Types.Select(t => t.Name).ToList()))" Title="Typen" Sortable="true"/>
+        <PropertyColumn Property="m => m.HealthPoints" Title="KP" Sortable="true"/>
+        <PropertyColumn Property="m => m.Attack" Title="Angriff" Sortable="true"/>
+        <PropertyColumn Property="m => m.Defense" Title="Verteidigung" Sortable="true"/>
+        <PropertyColumn Property="m => m.SpecialAttack" Title="Sp. Angriff" Sortable="true"/>
+        <PropertyColumn Property="m => m.SpecialDefense" Title="Sp. Verteidigung" Sortable="true"/>
+        <PropertyColumn Property="m => m.Speed" Title="Initiative" Sortable="true"/>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="Pokemon"/>
+    </PagerContent>
+
+</MudDataGrid>
+
+@code
+{
+    private IEnumerable<Pokemon>? Pokemons;
+    
+    private string searchString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Pokemons = await dbContext.Pokemons
+            .AsNoTracking()
+            .Include(p => p.Types)
+            .ThenInclude(t => t.MonTypeRelation)
+            .Include( p => p.Sprite)
+            .ToListAsync();
+    }
+}

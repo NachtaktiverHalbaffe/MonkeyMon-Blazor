@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using MonkeyMon_Blazor.Components;
 using MonkeyMon_Blazor.Infrastructure;
-using MonkeyMon_Blazor.Infrastructure.StartupTask;
 using MonkeyMon_Blazor.Properties;
 using MonkeyMon_Blazor.Services;
 
