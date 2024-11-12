@@ -1,15 +1,15 @@
 ﻿
 <MudNavMenu Rounded="true" Class="pa-2" Color="Color.Primary">
     <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Match="NavLinkMatch.All" Icon="@PokemonSvg" Href="/pokedex">Pokedex</MudNavLink>
+    <MudNavGroup Title="Forms" Icon="@Icons.Material.Filled.PlusOne" Expanded="false">
+        <MudNavLink Match="NavLinkMatch.All" Icon="@ApeSvg" Href="/monkeys/new">Monkeys</MudNavLink>
+    </MudNavGroup>
     <MudNavGroup Title="Statistiken" Icon="@Icons.Material.Filled.TableChart" Expanded="false">
         <MudNavLink Match="NavLinkMatch.All" Href="/pokemon/statistics"  Icon="@PokemonSvg">Pokemon</MudNavLink>
         <MudNavLink Match="NavLinkMatch.All" Href="/monkeys/statistics" Icon="@ApeSvg">Monkeys</MudNavLink>
         <MudNavLink Match="NavLinkMatch.All" Href="/species/statistics" Icon="@AnimalSvg">Species</MudNavLink>
     </MudNavGroup>
-    <MudNavGroup Title="Forms" Icon="@Icons.Material.Filled.PlusOne" Expanded="false">
-        <MudNavLink Match="NavLinkMatch.All" Icon="@ApeSvg" Href="/monkeys/new">Monkeys</MudNavLink>
-    </MudNavGroup>
-    
 </MudNavMenu>
 
 
