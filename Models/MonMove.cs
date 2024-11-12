@@ -2,7 +2,7 @@
 
 namespace MonkeyMon_Blazor.Models;
 
-public class MonMoves
+public class MonMove
 {
     /// <summary>
     /// The identifier for this resource.
@@ -52,12 +52,12 @@ public class MonMoves
     /// <summary>
     /// The type of damage the move inflicts on the target, e.g. physical.
     /// </summary>
-    public string DamageClass { get; set; }
+    public string DamageClass { get; set; } = string.Empty;
 
     /// <summary>
     /// The effect of this move listed in different languages.
     /// </summary>
-    public ICollection<string> EffectEntries { get; set; }
+    public ICollection<string> EffectEntries { get; set; } = [];
 
     /// <summary>
     /// The flavor text of this move listed in different languages.

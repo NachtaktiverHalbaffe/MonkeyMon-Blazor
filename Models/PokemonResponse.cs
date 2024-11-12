@@ -349,10 +349,18 @@ public class PokemonResponse : PokeApiNamedApiResource
     /// A list of forms this Pokémon can take on.
     /// </summary>
     public List<PokeApiNamedApiResource<PokemonFormResponse>> Forms { get; set; }
+    
+    /// <summary>
+    /// A list of moves along with learn methods and level
+    /// details pertaining to specific version groups.
+    /// </summary>
+    [JsonPropertyName("moves")]
+    public List<MoveResponse> Moves { get; set; }
 
     /// <summary>
     /// A set of sprites used to depict this Pokémon in the game.
     /// </summary>
+    [JsonPropertyName("sprites")]
     public PokemonSpritesResponse SpritesResponse { get; set; }
 
     /// <summary>

@@ -9,7 +9,7 @@ public class Pokemon
 
     public int Weight { get; set; } = 0;
     
-    public PokemonSpriteResponse? Sprite { get; set; }
+    public PokemonSprite? Sprite { get; set; }
 
     [Required] 
     [StringLength(100)] 
@@ -36,8 +36,7 @@ public class Pokemon
     [Range(0, 2000)]
     public ushort? HealthPoints { get; set; }
 
-    public ICollection<MonMoves> Moves { get; set; } = [];
+    public ICollection<MonMove> Moves { get; set; } = [];
     
-    // Navigation Properties
-    public Guid? SpriteId { get; set; } 
+    public ICollection<MonType> Types { get; set; }
 }

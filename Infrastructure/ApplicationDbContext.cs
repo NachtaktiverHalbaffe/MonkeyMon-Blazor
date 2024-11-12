@@ -17,13 +17,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Species> Species { get; set; } = null!;
 
-    public DbSet<Pokemon> PokedexEntries { get; set; } = null!;
+    public DbSet<Pokemon> Pokemons { get; set; } = null!;
 
-    public DbSet<MonMoves> MonMoves { get; set; } = null!;
+    public DbSet<MonMove> MonMoves { get; set; } = null!;
 
     public DbSet<MonType> MonTypes { get; set; } = null!;
 
-    public DbSet<PokemonSpriteResponse> PokemonSprites { get; set; } = null!;
+    public DbSet<MonTypeRelation> MonTypeRelations { get; set; } = null!;
+
+    public DbSet<PokemonSprite> PokemonSprites { get; set; } = null!;
     public override int SaveChanges()
     {
         ValidateEntities();
@@ -77,8 +79,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             options.Property(s => s.Taxonomy)
                 .HasConversion(dictValueConverter);
             options.Property(s => s.Locations).HasConversion(stringArrayValueConverter);
-            ;
         });
+        builder.Entity<MonType>()
+            .HasOne(mt => mt.MonTypeRelation)
+            .WithOne(mtr => mtr.MonType)
+            .HasForeignKey<MonTypeRelation>(mtr => mtr.MonTypeId);
 
         // Seed data conditionally
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
