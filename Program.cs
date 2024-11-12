@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 using MonkeyMon_Blazor.Components;
 using MonkeyMon_Blazor.Infrastructure;
+using MonkeyMon_Blazor.Infrastructure.StartupTask;
 using MonkeyMon_Blazor.Properties;
 using MonkeyMon_Blazor.Services;
 
@@ -29,6 +30,7 @@ builder.Services.AddHttpClient<PokeApiService>(configureClient: client =>
 {
     client.BaseAddress = new Uri("https://pokeapi.co/api/v2/");
 });
+builder.Services.AddHostedService<FetchPokeApiStartupTask>();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
@@ -62,12 +64,9 @@ try
 
     if (app.Environment.IsDevelopment())
     {
-        if (!context.Monkeys.Any())
-        {
-            // recreate database and fill with seed data
-            context.Database.EnsureDeleted();
-            context.Database.EnsureCreated(); 
-        }
+        // recreate database and fill with seed data
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
     }
     else
     {

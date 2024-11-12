@@ -315,6 +315,7 @@ public class PokeApiService(HttpClient client)
             await client.SendAsync(request, HttpCompletionOption.ResponseContentRead, cancellationToken);
 
         response.EnsureSuccessStatusCode();
+        var resptest = await response.Content.ReadAsStringAsync();
         return DeserializeStream<T>(await response.Content.ReadAsStreamAsync());
     }
 
