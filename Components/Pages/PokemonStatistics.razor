@@ -42,9 +42,6 @@
     {
         Pokemons = await dbContext.Pokemons
             .AsNoTracking()
-            .Include(p => p.Types)
-            .ThenInclude(t => t.MonTypeRelation)
-            .Include( p => p.Sprite)
             .ToListAsync();
     }
 }

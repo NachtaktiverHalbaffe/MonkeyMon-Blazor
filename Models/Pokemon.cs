@@ -7,7 +7,16 @@ public class Pokemon
     [Key]
     public int Id { get; set; }
 
-    public int Weight { get; set; } = 0;
+    public double Height { get; set; } = 0;
+
+    public double Weight { get; set; } = 0;
+
+    public bool IsMale { get; set; } = false;
+
+    public bool IsFemale { get; set; } = false;
+
+    [StringLength(50)]
+    public string Species { get; set; } = string.Empty;
     
     public PokemonSprite? Sprite { get; set; }
 

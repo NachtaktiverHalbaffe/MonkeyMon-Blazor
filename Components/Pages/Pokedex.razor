@@ -5,8 +5,9 @@
 @using MonkeyMon_Blazor.Models
 @inject ApplicationDbContext dbContext
 
-<PageTitle>Pokedex</PageTitle>
-<h2>Pokedex</h2>
+@attribute [StreamRendering(true)]
+
+<PageTitle>Pokedex</PageTitle>-
 
 @if (Pokemons is null)
 {
@@ -14,84 +15,199 @@
 }
 else
 {
-    <MudCarousel ShowArrows="true" ShowBullets="true" EnableSwipeGesture="true" AutoCycle="false" TData="Pokemon" Style="height: 100rem">
+    <MudCarousel ShowArrows="true" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="false" TData="Pokemon" Style="height: 120vh; width: 60vw">
         @foreach (var pokemon in Pokemons)
         {
-            <MudCarouselItem Transition="Transition.Slide">
-                <div style="height: 100%">
-                    <MudCard>
+            <MudCarouselItem Transition="Transition.Fade">
+                <MudContainer Class="d-flex flex-column justify-center align-center " Style="width: 100%">
+                    <MudCard style="height: 120vh; width: 50vw; background-color: #FB1B1B">
                         <MudCardHeader>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.h6">@pokemon.Name.Capitalize()</MudText>
-                                @foreach (var type in pokemon.Types)
-                                {
-                                    <MudChip Class="d-inline-flex" T="string" Color="Color.Dark" Style="@($"background-color: {GetTypeColor(type.Name)}")" Size="Size.Small">
-                                        <AvatarContent>
-                                            <MudAvatar Color="Color.Transparent">
-                                                <MudImage Src="@($"{type.Name}.png")" ObjectFit="ObjectFit.ScaleDown" Class="pa-2"/>
-                                            </MudAvatar>
-                                        </AvatarContent>
-                                        <ChildContent>@type.Name.Capitalize()</ChildContent>
-                                    </MudChip>
-                                }
+                                <MudText Typo="Typo.h6" Align="Align.Center" Style="color: white">
+                                    <b style="color: #DFDFDF">Nr. @pokemon.Id</b> @pokemon.Name.Capitalize()
+                                </MudText>
+
+                                <MudContainer Class="d-flex flex-row justify-center mt-1">
+                                    @foreach (var type in pokemon.Types)
+                                    {
+                                        <PokemonTypeChip PokemonType="@type"/>
+                                    }
+                                </MudContainer>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            @if (pokemon.Sprite?.FrontDefault is not null)
-                            {
-                                <img src="@pokemon.Sprite.FrontDefault" width="100" ObjectFit="ObjectFit.Contain" alt="Image of pokemon"/>
-                            }
-                            <MudText Class="pb-4" Typo="Typo.body1">@pokemon.Description</MudText>
+                            <MudContainer Class="d-flex flex-row align-center px-5">
+                                <MudAvatar Style="height: 30vh; width: auto" Class="me-8">
+                                    <MudImage
+                                        Src="@(pokemon.Sprite?.FrontDefault ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/0.png")"
+                                        ObjectFit="ObjectFit.Contain"
+                                        alt="Image of pokemon"
+                                        Height="200"
+                                        Width="200"/>
+                                </MudAvatar>
 
-                            <div class="py-2 d-flex flex-column">
-                                <MudText Class="d-inline-flex" Typo="Typo.body1">HP: @pokemon.HealthPoints</MudText>
-                                <div class="d-inline-flex flex-row">
-                                    <MudProgressLinear Class="d-inline-flex" Rounded="true" Value="@((int)(pokemon.HealthPoints ?? 0))" Min="0" Max="714"/>
-                                </div>
-                            </div>
-                            <div class="py-2">
-                                <MudText Class="d-inline-flex" Typo="Typo.body1">Angriff: @pokemon.Attack</MudText>
-                                <MudProgressLinear Rounded="true" Value="@((int)(pokemon.Attack ?? 0))" Min="0" Max="723"/>
-                            </div>
-                            <div class="py-2">
-                                <MudText Class="d-inline-flex" Typo="Typo.body1">Verteidigung: @pokemon.Defense</MudText>
-                                <MudProgressLinear Rounded="true" Value="@((int)(pokemon.Defense ?? 0))" Min="0" Max="654"/>
-                            </div>
-                            <div class="py-2">
-                                <MudText Class="d-inline-flex" Typo="Typo.body1">Sp. Angriff: @pokemon.SpecialAttack</MudText>
-                                <MudProgressLinear Rounded="true" Value="@((int)(pokemon.SpecialAttack ?? 0))" Min="0" Max="624"/>
-                            </div>
-                            <div class="py-2">
-                                <MudText Class="d-inline-flex" Typo="Typo.body1">Sp. Verteidigung: @pokemon.SpecialDefense</MudText>
-                                <MudProgressLinear Rounded="true" Value="@((int)(pokemon.SpecialDefense ?? 0))" Min="0" Max="654"/>
-                            </div>
-                            <div class="py-2">
-                                <MudText Class="d-inline-flex" Typo="Typo.body1">Initiative: @pokemon.Speed</MudText>
-                                <MudProgressLinear Rounded="true" Value="@((int)(pokemon.Speed ?? 0))" Min="0" Max="854"/>
-                            </div>
-                            
-                            <MudText Class="mt-4" Typo="Typo.body1">Angriffe</MudText>
-                            
-                            <MudDataGrid T="MonMove" Items="@pokemon.Moves">
-                                <Columns>
-                                    <PropertyColumn Property="mm=>mm.Name.Capitalize()" Title="Name"/>
-                                    <PropertyColumn Property="mm => mm.Power" Title="Schaden"/>
-                                    <PropertyColumn Property="mm => mm.DamageClass.Capitalize()" Title="Schadensklasse"/>
-                                    <PropertyColumn Property="mm => mm.Type.Name.Capitalize()" Title="Typ"/>
-                                    <PropertyColumn Property="mm => mm.Accuracy" Title="Genauigkeit"/>
-                                    <PropertyColumn Property="mm => mm.Pp" Title="PP"/>
-                                    <PropertyColumn Property="mm => mm.Priority" Title="Priorität"/>
-                                </Columns>
+                                <MudContainer Class="d-flex flex-column" Style="height: 35vh">
+                                    <MudText Class="pb-4" Typo="Typo.body1" Style="color: white; height: 12vh;">@pokemon.Description</MudText>
 
-                                <PagerContent>
-                                    <MudDataGridPager T="MonMove" />
-                                </PagerContent>
-                            </MudDataGrid>
-                            
+                                    <MudPaper Class="pa-4" Style="background-color: #DFDFDF; color: black">
+                                        <MudGrid>
+                                            <MudItem xs="6">
+                                                <MudText>
+                                                    <b>Größe</b>
+                                                </MudText>
+                                                <MudText>@pokemon.Height m</MudText>
+                                            </MudItem>
+
+                                            <MudItem xs="6">
+                                                <MudText>
+                                                    <b>Kategorie</b>
+                                                </MudText>
+                                                <MudText>@pokemon.Species</MudText>
+                                            </MudItem>
+
+                                            <MudItem xs="6">
+                                                <MudText>
+                                                    <b>Gewicht</b>
+                                                </MudText>
+                                                <MudText>@pokemon.Weight kg</MudText>
+                                            </MudItem>
+
+                                            <MudItem Class="d-flex flex-column justify-start" xs="6" Style="width: 100%">
+                                                <MudText>
+                                                    <b>Geschlecht</b>
+                                                </MudText>
+                                                <MudText Class="d-flex flex-row justify-start" Style="width: 100%">
+                                                    @if (pokemon.IsMale)
+                                                    {
+                                                        <MudIcon Icon="@Icons.Material.Filled.Male"/>
+                                                    }
+                                                    @if (pokemon.IsFemale)
+                                                    {
+                                                        <MudIcon Icon="@Icons.Material.Filled.Female"/>
+                                                    }
+                                                </MudText>
+                                            </MudItem>
+                                        </MudGrid>
+                                    </MudPaper>
+
+                                </MudContainer>
+
+                            </MudContainer>
+
+
+                            <MudExpansionPanels>
+                                <MudExpansionPanel Class="mt-6" Style="background-color: #DFDFDF">
+                                    <TitleContent>
+                                        <div class="d-flex" style="color: black;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Shield" Class="me-2"/>
+                                            <MudText>Kampfwerte</MudText>
+                                        </div>
+                                    </TitleContent>
+
+                                    <ChildContent>
+                                        <div class="py-2 d-flex flex-column">
+                                            <MudText Class="d-inline-flex" Typo="Typo.body1">HP: @pokemon.HealthPoints</MudText>
+                                            <div class="d-inline-flex flex-row">
+                                                <MudProgressLinear Class="d-inline-flex" Rounded="true" Value="@((int)(pokemon.HealthPoints ?? 0))" Min="0" Max="714"/>
+                                            </div>
+                                        </div>
+                                        <div class="py-2">
+                                            <MudText Class="d-inline-flex" Typo="Typo.body1">Angriff: @pokemon.Attack</MudText>
+                                            <MudProgressLinear Rounded="true" Value="@((int)(pokemon.Attack ?? 0))" Min="0" Max="723"/>
+                                        </div>
+                                        <div class="py-2">
+                                            <MudText Class="d-inline-flex" Typo="Typo.body1">Verteidigung: @pokemon.Defense</MudText>
+                                            <MudProgressLinear Rounded="true" Value="@((int)(pokemon.Defense ?? 0))" Min="0" Max="654"/>
+                                        </div>
+                                        <div class="py-2">
+                                            <MudText Class="d-inline-flex" Typo="Typo.body1">Sp. Angriff: @pokemon.SpecialAttack</MudText>
+                                            <MudProgressLinear Rounded="true" Value="@((int)(pokemon.SpecialAttack ?? 0))" Min="0" Max="624"/>
+                                        </div>
+                                        <div class="py-2">
+                                            <MudText Class="d-inline-flex" Typo="Typo.body1">Sp. Verteidigung: @pokemon.SpecialDefense</MudText>
+                                            <MudProgressLinear Rounded="true" Value="@((int)(pokemon.SpecialDefense ?? 0))" Min="0" Max="654"/>
+                                        </div>
+                                        <div class="py-2">
+                                            <MudText Class="d-inline-flex" Typo="Typo.body1">Initiative: @pokemon.Speed</MudText>
+                                            <MudProgressLinear Rounded="true" Value="@((int)(pokemon.Speed ?? 0))" Min="0" Max="854"/>
+                                        </div>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+
+                                <MudExpansionPanel Class="mt-6" Style="background-color: #DFDFDF">
+                                    <TitleContent>
+                                        <div class="d-flex" style="color: black;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Castle" Class="me-2"/>
+                                            <MudText>Typ</MudText>
+                                        </div>
+                                    </TitleContent>
+
+                                    <ChildContent >
+                                        <MudText Style="color: black" >
+                                            Doppelter Schaden von:
+                                        </MudText>
+                                        @foreach (var type in pokemon.Types)
+                                        {
+                                            @foreach (var weakType in type.DoubleDamageFrom)
+                                            {
+                                                <PokemonTypeChip PokemonType="@weakType"/>
+                                            }
+                                        }
+
+                                        <MudText Style="color: black" >
+                                            Halber Schaden von:
+                                        </MudText>
+                                        @foreach (var type in pokemon.Types)
+                                        {
+                                            @foreach (var weakType in type.HalfDamageFrom)
+                                            {
+                                                <PokemonTypeChip PokemonType="@weakType"/>
+                                            }
+                                        }
+
+                                        <MudText Style="color: black" >
+                                            Kein Schaden von: 
+                                        </MudText>
+                                        @foreach (var type in pokemon.Types)
+                                        {
+                                            @foreach (var weakType in type.NoDamageFrom)
+                                            {
+                                                <PokemonTypeChip PokemonType="@weakType"/>
+                                            }
+                                        }
+                                    </ChildContent>
+                                </MudExpansionPanel>
+
+                                <MudExpansionPanel Class="mt-6" Style="background-color: #DFDFDF">
+                                    <TitleContent>
+                                        <div class="d-flex" style="color: black;">
+                                            <MudIcon Icon="@Icons.Material.Filled.Castle" Class="me-2"/>
+                                            <MudText>Angriffe</MudText>
+                                        </div>
+                                    </TitleContent>
+
+                                    <ChildContent>
+                                        <MudDataGrid T="MonMove" Items="@pokemon.Moves" FixedHeader="true" FixedFooter="true" Height="20vw" Width="50vw">
+                                            <Columns>
+                                                <PropertyColumn Property="mm => mm.Name.Capitalize()" Title="Name"/>
+                                                <PropertyColumn Property="mm => mm.Power" Title="Schaden"/>
+                                                <PropertyColumn Property="mm => mm.DamageClass.Capitalize()" Title="Schadensklasse"/>
+                                                <PropertyColumn Property="mm => mm.Type.Name.Capitalize()" Title="Typ"/>
+                                                <PropertyColumn Property="mm => mm.Accuracy" Title="Genauigkeit"/>
+                                                <PropertyColumn Property="mm => mm.Pp" Title="PP"/>
+                                                <PropertyColumn Property="mm => mm.Priority" Title="Priorität"/>
+                                            </Columns>
+
+                                            <PagerContent>
+                                                <MudDataGridPager T="MonMove"/>
+                                            </PagerContent>
+                                        </MudDataGrid>
+                                    </ChildContent>
+                                </MudExpansionPanel>
+                            </MudExpansionPanels>
                         </MudCardContent>
                     </MudCard>
-                </div>
-
+                </MudContainer>
             </MudCarouselItem>
         }
     </MudCarousel>
@@ -106,39 +222,17 @@ else
         Pokemons = await dbContext.Pokemons
             .AsNoTracking()
             .Include(p => p.Types)
-            .ThenInclude(t => t.MonTypeRelation)
+            .ThenInclude(t => t.DoubleDamageFrom)
+            .Include(p => p.Types)
+            .ThenInclude(t => t.HalfDamageFrom)
+            .Include(p => p.Types)
+            .ThenInclude(t => t.NoDamageFrom)
             .Include(t => t.Sprite)
             .Include(p => p.Moves)
             .ThenInclude(mm => mm.Type)
             .ToListAsync();
 
         await base.OnInitializedAsync();
-    }
-
-    private string GetTypeColor(string type)
-    {
-        return type switch
-        {
-            "normal" => "#FFA7A877",
-            "fire" => "rgba(29, 255, 250, 62)",
-            "water" => "FF777BDFE",
-            "grass" => "rgba(8, 216, 60, 255)",
-            "electric" => "rgba(244, 255, 231, 255)",
-            "ice" => "#99D7D8",
-            "fighting" => "#C03128",
-            "poison" => "#9F419F",
-            "ground" => "#E1C068",
-            "flying" => "#A890F0",
-            "psychic" => "#F95887",
-            "bug" => "#A8B91F",
-            "rock" => "#B8A038",
-            "ghost" => "#705998",
-            "dark" => "#6F5848",
-            "dragon" => "#7138F8",
-            "steel" => "#B8B8D0",
-            "fairy" => "#A890F0",
-            _ => "#000000"
-        };
     }
 
 }

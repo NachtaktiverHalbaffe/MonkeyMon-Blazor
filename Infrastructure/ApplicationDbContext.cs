@@ -20,10 +20,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Pokemon> Pokemons { get; set; } = null!;
 
     public DbSet<MonMove> MonMoves { get; set; } = null!;
-
+    
     public DbSet<MonType> MonTypes { get; set; } = null!;
-
-    public DbSet<MonTypeRelation> MonTypeRelations { get; set; } = null!;
 
     public DbSet<PokemonSprite> PokemonSprites { get; set; } = null!;
     public override int SaveChanges()
@@ -50,7 +48,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
+        
         foreach (var relationship in builder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
@@ -80,11 +78,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .HasConversion(dictValueConverter);
             options.Property(s => s.Locations).HasConversion(stringArrayValueConverter);
         });
-        
-        builder.Entity<MonType>()
-            .HasOne(mt => mt.MonTypeRelation)
-            .WithOne(mtr => mtr.MonType)
-            .HasForeignKey<MonTypeRelation>(mtr => mtr.MonTypeId);
+
+        builder.Entity<MonType>(options =>
+        {
+            options
+                .HasMany(t => t.DoubleDamageFrom)
+                .WithMany(t => t.DoubleDamageTo);
+
+            options
+                .HasMany(t => t.HalfDamageFrom)
+                .WithMany(t => t.HalfDamageTo);
+
+            options
+                .HasMany(t => t.NoDamageFrom)
+                .WithMany(t => t.NoDamageTo);
+        });
 
         builder.Entity<MonMove>().Property(mm => mm.EffectEntries).HasConversion(stringArrayValueConverter);
 

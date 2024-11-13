@@ -19,7 +19,7 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         var nrExistingPokemon = await dbContext.Pokemons.CountAsync(cancellationToken: cancellationToken);
 
         var fetchAblePokemon =
-            await pokeApiService.GetNamedResourcePageAsync<PokemonResponse>(20, 0, cancellationToken);
+            await pokeApiService.GetNamedResourcePageAsync<PokemonResponse>(10, 0, cancellationToken);
 
         if (nrExistingPokemon != fetchAblePokemon.Results.Count)
         {
@@ -38,7 +38,8 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
                 {
                     Name = pokemonResponse.Name,
                     Id = pokemonResponse.Id,
-                    Weight = pokemonResponse.Weight,
+                    Weight = Math.Round(pokemonResponse.Weight * 0.1, 2),
+                    Height = Math.Round(pokemonResponse.Height * 0.1, 2),
                     Types = [],
                     Moves = []
                 };
@@ -55,17 +56,17 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
                     pokemon.Moves.Add(pokemonMove);
                 }
 
-                (pokemon.Name, pokemon.Description) = await GenerateNameAndDescription(pokemonResponse.Species);
-                
+                (pokemon.Name, pokemon.Description, pokemon.Species, pokemon.IsMale, pokemon.IsFemale) =
+                    await GenerateNameAndDescription(pokemonResponse.Species);
+
                 GeneratePokemonStats(pokemonResponse.Stats, pokemon);
 
                 var pokemonSprites = GeneratePokemonSprite(pokemonResponse.SpritesResponse);
                 pokemonSprites.PokemonId = pokemon.Id;
                 await dbContext.PokemonSprites.AddAsync(pokemonSprites, cancellationToken);
-
                 await dbContext.Pokemons.AddAsync(pokemon, cancellationToken);
             }
-
+            
             await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
@@ -88,25 +89,28 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
     private async Task<MonType> _GenerateMonType(string resourceName, CancellationToken cancellationToken)
     {
         var existingType = await dbContext.MonTypes
-            .SingleOrDefaultAsync(type => type.Name.ToLower().Contains(resourceName.ToLower()),
+            .AsSplitQuery()
+            .Include(t => t.DoubleDamageFrom)
+            .Include(t => t.DoubleDamageTo)
+            .Include(t => t.HalfDamageFrom)
+            .Include(t => t.HalfDamageTo)
+            .Include(t => t.NoDamageFrom)
+            .Include(t => t.NoDamageTo)
+            .SingleOrDefaultAsync(type => type.Name == resourceName,
                 cancellationToken: cancellationToken);
+        
+        var type = await pokeApiService.GetResourceAsync<TypeResponse>(resourceName,
+            cancellationToken);
 
         if (existingType is null)
         {
-            var type = await pokeApiService.GetResourceAsync<TypeResponse>(resourceName,
-                cancellationToken);
-
             var monType = new MonType
             {
+                Id = type.Id,
                 Name = type.Name,
             };
+            await _GenerateMonTypeRelation(type.DamageRelationsResponse, monType, cancellationToken);
 
-            var pokemonRelationType =
-                await _GenerateMonTypeRelation(type.DamageRelationsResponse, cancellationToken);
-            pokemonRelationType.MonTypeId = monType.Id;
-
-            monType.MonTypeRelation = pokemonRelationType;
-            await dbContext.AddAsync(pokemonRelationType, cancellationToken);
             await dbContext.MonTypes.AddAsync(monType, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -114,35 +118,81 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         }
         else
         {
+            await _GenerateMonTypeRelation(type.DamageRelationsResponse, existingType, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
             return existingType;
         }
     }
 
 
-    private async Task<MonTypeRelation> _GenerateMonTypeRelation(TypeRelationsResponse typeRelationDto,
+    private async Task _GenerateMonTypeRelation(TypeRelationsResponse typeRelationDto, MonType forType,
         CancellationToken cancellationToken)
     {
-        var typeResponse = new MonTypeRelation();
-
         var doubleDamageTo = await _FetchAllTypes(typeRelationDto.DoubleDamageTo, cancellationToken);
-        typeResponse.DoubleDamageTo = doubleDamageTo;
+        foreach (var monType in doubleDamageTo)
+        {
+            var alreadyExists = forType.DoubleDamageTo.Any(type => type.Id == monType.Id);
+
+            if (!alreadyExists)
+            {
+                forType.DoubleDamageTo.Add(monType);
+            }
+        }
 
         var doubleDamageFrom = await _FetchAllTypes(typeRelationDto.DoubleDamageFrom, cancellationToken);
-        typeResponse.DoubleDamageFrom = doubleDamageFrom;
+        foreach (var monType in doubleDamageFrom)
+        {
+            var alreadyExists = forType.DoubleDamageFrom.Any(type => type.Id == monType.Id);
+
+            if (!alreadyExists)
+            {
+                forType.DoubleDamageFrom.Add(monType);
+            }
+        }
 
         var halfDamageTo = await _FetchAllTypes(typeRelationDto.HalfDamageTo, cancellationToken);
-        typeResponse.HalfDamageTo = halfDamageTo;
+        foreach (var monType in halfDamageTo)
+        {
+            var alreadyExists = forType.HalfDamageTo.Any(type => type.Id == monType.Id);
+
+            if (!alreadyExists)
+            {
+                forType.HalfDamageTo.Add(monType);
+            }
+        }
 
         var halfDamageFrom = await _FetchAllTypes(typeRelationDto.HalfDamageFrom, cancellationToken);
-        typeResponse.HalfDamageFrom = halfDamageFrom;
+        foreach (var monType in halfDamageFrom)
+        {
+            var alreadyExists = forType.HalfDamageFrom.Any(type => type.Id == monType.Id);
+
+            if (!alreadyExists)
+            {
+                forType.HalfDamageFrom.Add(monType);
+            }
+        }
 
         var noDamageTo = await _FetchAllTypes(typeRelationDto.NoDamageTo, cancellationToken);
-        typeResponse.NoDamageTo = noDamageTo;
+        foreach (var monType in noDamageTo)
+        {
+            var alreadyExists = forType.NoDamageTo.Any(type => type.Id == monType.Id);
+
+            if (!alreadyExists)
+            {
+                forType.NoDamageTo.Add(monType);
+            }
+        }
 
         var noDamageFrom = await _FetchAllTypes(typeRelationDto.NoDamageFrom, cancellationToken);
-        typeResponse.NoDamageFrom = noDamageFrom;
+        foreach (var monType in noDamageFrom)
+        {
+            var alreadyExists = forType.NoDamageFrom.Any(type => type.Id == monType.Id);
 
-        return typeResponse;
+            if (!alreadyExists)
+            {
+                forType.NoDamageFrom.Add(monType);
+            }
+        }
     }
 
     private async Task<ICollection<MonType>> _FetchAllTypes(List<PokeApiNamedApiResource<TypeResponse>> types,
@@ -152,8 +202,9 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         foreach (var type in types)
         {
             var existingType =
-                await dbContext.MonTypes.SingleOrDefaultAsync(t => t.Name.ToLower().Contains(type.Name.ToLower()),
-                    cancellationToken);
+                await dbContext.MonTypes
+                    .SingleOrDefaultAsync(t => t.Name == type.Name,
+                        cancellationToken);
 
             if (existingType is not null)
             {
@@ -213,12 +264,13 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
 
         foreach (var moveResponse in movesResponse.ToList())
         {
-
             var existingMove =
-                await dbContext.MonMoves.SingleOrDefaultAsync(move => move.Name.ToLower() == moveResponse.Move.Name.ToLower(), cancellationToken);
+                await dbContext.MonMoves.SingleOrDefaultAsync(
+                    move => move.Name.ToLower() == moveResponse.Move.Name.ToLower(), cancellationToken);
             if (existingMove is null)
             {
-                var fetchedMove = await pokeApiService.GetResourceAsync<MoveResponse>(moveResponse.Move.Name, cancellationToken);
+                var fetchedMove =
+                    await pokeApiService.GetResourceAsync<MoveResponse>(moveResponse.Move.Name, cancellationToken);
                 var newMove = new MonMove
                 {
                     Id = fetchedMove.Id,
@@ -229,7 +281,9 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
                     Priority = fetchedMove.Priority,
                     Power = fetchedMove.Power,
                     DamageClass = fetchedMove.DamageClass.Name,
-                    Description = fetchedMove.FlavorTextEntries.FirstOrDefault(entry => entry.Language.Name == "de")?.FlavorText ?? string.Empty
+                    Description =
+                        fetchedMove.FlavorTextEntries.FirstOrDefault(entry => entry.Language.Name == "de")
+                            ?.FlavorText ?? string.Empty
                 };
 
                 var type = await _GenerateMonType(
@@ -250,17 +304,38 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         return moves;
     }
 
-    private async Task<(string name, string description )> GenerateNameAndDescription(
-        PokeApiNamedApiResource<PokemonSpeciesResponse> species)
+    private async Task<(string name, string description, string species, bool isMale, bool isFemale)>
+        GenerateNameAndDescription(
+            PokeApiNamedApiResource<PokemonSpeciesResponse> species)
     {
         var fetchedSpecies = await pokeApiService.GetResourceAsync<PokemonSpeciesResponse>(species.Name);
 
         var name = fetchedSpecies.Names
-            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))?.Name ?? "";
+            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))
+            ?.Name ?? "";
 
         var description = fetchedSpecies.FlavorTextEntries
-            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))?.FlavorText ?? "";
+            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))
+            ?.FlavorText ?? "";
 
-        return (name, description);
+        var speciesLocalizedResponse = fetchedSpecies.Genera
+            .FirstOrDefault(entry => entry.Language.Name.Contains("de", StringComparison.CurrentCultureIgnoreCase))
+            ?.Genus ?? "";
+
+        var isMale = fetchedSpecies.GenderRate switch
+        {
+            -1 => false,
+            8 => false,
+            _ => true
+        };
+
+        var isFemale = fetchedSpecies.GenderRate switch
+        {
+            -1 => false,
+            0 => false,
+            _ => true
+        };
+
+        return (name, description, speciesLocalizedResponse, isMale, isFemale);
     }
 }

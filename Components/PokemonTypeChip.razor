@@ -1,0 +1,41 @@
+﻿@using MonkeyMon_Blazor.Infrastructure.Algorithms
+@using MonkeyMon_Blazor.Models
+
+<MudChip T="string" Color="Color.Dark" Style="@($"background-color: {GetTypeColor(PokemonType.Name)}")" Size="Size.Small">
+    <AvatarContent>
+        <MudAvatar>
+            <MudImage Src="@($"{PokemonType.Name}.png")" ObjectFit="ObjectFit.Contain" Class="pa-1"/>
+        </MudAvatar>
+    </AvatarContent>
+    <ChildContent>@PokemonType.Name.Capitalize()</ChildContent>
+</MudChip>
+
+@code {
+    [Parameter] public MonType PokemonType { get; set; }
+    
+    private string GetTypeColor(string type)
+    {
+        return type switch
+        {
+            "normal" => "#A7A877",
+            "fire" => "rgb(255, 0, 0)",
+            "water" => "#77BDFE",
+            "grass" => "rgba(8, 216, 60, 255)",
+            "electric" => "rgb(244, 255, 0)",
+            "ice" => "#99D7D8",
+            "fighting" => "#C03128",
+            "poison" => "#9F419F",
+            "ground" => "#E1C068",
+            "flying" => "#A890F0",
+            "psychic" => "#F95887",
+            "bug" => "#A8B91F",
+            "rock" => "#B8A038",
+            "ghost" => "#705998",
+            "dark" => "#6F5848",
+            "dragon" => "#7138F8",
+            "steel" => "#B8B8D0",
+            "fairy" => "#A890F0",
+            _ => "#000000"
+        };
+    }
+}
