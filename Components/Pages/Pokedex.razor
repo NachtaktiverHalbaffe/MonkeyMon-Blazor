@@ -5,9 +5,9 @@
 @using MonkeyMon_Blazor.Models
 @inject ApplicationDbContext dbContext
 
-@attribute [StreamRendering(true)]
+@attribute [StreamRendering]
 
-<PageTitle>Pokedex</PageTitle>-
+<PageTitle>Pokedex</PageTitle>
 
 @if (Pokemons is null)
 {
@@ -15,12 +15,13 @@
 }
 else
 {
-    <MudCarousel ShowArrows="true" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="false" TData="Pokemon" Style="height: 120vh; width: 60vw">
+    <MudCarousel @ref="_carousel" ShowArrows="true" ShowBullets="false" EnableSwipeGesture="true" AutoCycle="true"
+                 TData="Pokemon" Style="height: 127vh; width: 60vw" SelectedIndexChanged="@OnCarouselChange">
         @foreach (var pokemon in Pokemons)
         {
-            <MudCarouselItem Transition="Transition.Fade">
+            <MudCarouselItem Transition="Transition.None">
                 <MudContainer Class="d-flex flex-column justify-center align-center " Style="width: 100%">
-                    <MudCard style="height: 120vh; width: 50vw; background-color: #FB1B1B">
+                    <MudCard style="height: 127vh; width: 50vw; background: #FB1B1B url(https://assets.pokemon.com/static2/_ui/img/chrome/container_bg.png);">
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h6" Align="Align.Center" Style="color: white">
@@ -96,7 +97,7 @@ else
 
 
                             <MudExpansionPanels>
-                                <MudExpansionPanel Class="mt-6" Style="background-color: #DFDFDF">
+                                <MudExpansionPanel Class="mt-6 rounded-lg" Style="background-color: #DFDFDF">
                                     <TitleContent>
                                         <div class="d-flex" style="color: black;">
                                             <MudIcon Icon="@Icons.Material.Filled.Shield" Class="me-2"/>
@@ -134,7 +135,7 @@ else
                                     </ChildContent>
                                 </MudExpansionPanel>
 
-                                <MudExpansionPanel Class="mt-6" Style="background-color: #DFDFDF">
+                                <MudExpansionPanel Class="mt-6 rounded-lg" Style="background-color: #DFDFDF">
                                     <TitleContent>
                                         <div class="d-flex" style="color: black;">
                                             <MudIcon Icon="@Icons.Material.Filled.Castle" Class="me-2"/>
@@ -143,42 +144,52 @@ else
                                     </TitleContent>
 
                                     <ChildContent >
-                                        <MudText Style="color: black" >
-                                            Doppelter Schaden von:
-                                        </MudText>
-                                        @foreach (var type in pokemon.Types)
+
+                                        @if (pokemon.Types.Any(t => t.DoubleDamageFrom.Count != 0))
                                         {
-                                            @foreach (var weakType in type.DoubleDamageFrom)
+                                            <MudText Style="color: black">
+                                                Doppelter Schaden von:
+                                            </MudText>
+                                            @foreach (var type in pokemon.Types)
                                             {
-                                                <PokemonTypeChip PokemonType="@weakType"/>
+                                                @foreach (var weakType in type.DoubleDamageFrom)
+                                                {
+                                                    <PokemonTypeChip PokemonType="@weakType"/>
+                                                }
                                             }
                                         }
 
-                                        <MudText Style="color: black" >
-                                            Halber Schaden von:
-                                        </MudText>
-                                        @foreach (var type in pokemon.Types)
+                                        @if (pokemon.Types.Any(t => t.HalfDamageFrom.Count != 0))
                                         {
-                                            @foreach (var weakType in type.HalfDamageFrom)
+                                            <MudText Style="color: black" Class="mt-2">
+                                                Halber Schaden von:
+                                            </MudText>
+                                            @foreach (var type in pokemon.Types)
                                             {
-                                                <PokemonTypeChip PokemonType="@weakType"/>
+                                                @foreach (var weakType in type.HalfDamageFrom)
+                                                {
+                                                    <PokemonTypeChip PokemonType="@weakType"/>
+                                                }
                                             }
                                         }
 
-                                        <MudText Style="color: black" >
-                                            Kein Schaden von: 
-                                        </MudText>
-                                        @foreach (var type in pokemon.Types)
+                                        @if (pokemon.Types.Any(t => t.NoDamageFrom.Count != 0))
                                         {
-                                            @foreach (var weakType in type.NoDamageFrom)
+                                            <MudText Style="color: black" Class="mt-2">
+                                                Kein Schaden von:
+                                            </MudText>
+                                            @foreach (var type in pokemon.Types)
                                             {
-                                                <PokemonTypeChip PokemonType="@weakType"/>
+                                                @foreach (var weakType in type.NoDamageFrom)
+                                                {
+                                                    <PokemonTypeChip PokemonType="@weakType"/>
+                                                }
                                             }
                                         }
                                     </ChildContent>
                                 </MudExpansionPanel>
 
-                                <MudExpansionPanel Class="mt-6" Style="background-color: #DFDFDF">
+                                <MudExpansionPanel Class="mt-6 rounded-lg" Style="background-color: #DFDFDF">
                                     <TitleContent>
                                         <div class="d-flex" style="color: black;">
                                             <MudIcon Icon="@Icons.Material.Filled.Castle" Class="me-2"/>
@@ -215,7 +226,11 @@ else
 
 
 @code {
-    private IReadOnlyList<Pokemon>? Pokemons;
+    private ICollection<Pokemon>? Pokemons;
+
+    private MudCarousel<Pokemon> _carousel;
+    private int currentPage;
+    private const int pageSize = 10;
 
     protected override async Task OnInitializedAsync()
     {
@@ -230,9 +245,40 @@ else
             .Include(t => t.Sprite)
             .Include(p => p.Moves)
             .ThenInclude(mm => mm.Type)
+            .Take(pageSize)
             .ToListAsync();
 
         await base.OnInitializedAsync();
+    }
+
+    private async Task OnCarouselChange(int index)
+    {
+        if (index >= (Pokemons ?? []).Count - 1)
+        {
+            var nextPage = await dbContext.Pokemons
+                .AsNoTracking()
+                .Include(p => p.Types)
+                .ThenInclude(t => t.DoubleDamageFrom)
+                .Include(p => p.Types)
+                .ThenInclude(t => t.HalfDamageFrom)
+                .Include(p => p.Types)
+                .ThenInclude(t => t.NoDamageFrom)
+                .Include(t => t.Sprite)
+                .Include(p => p.Moves)
+                .ThenInclude(mm => mm.Type)
+                .Skip(currentPage * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            foreach (var pokemon in nextPage)
+            {
+                Pokemons?.Add(pokemon);
+            }
+
+            currentPage++;
+
+            _carousel.MoveTo((Pokemons ?? []).Count - pageSize - 1);
+        }
     }
 
 }

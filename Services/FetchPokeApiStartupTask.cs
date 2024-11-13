@@ -19,14 +19,14 @@ public class FetchPokeApiStartupTask(IServiceScopeFactory serviceScopeFactory) :
         var nrExistingPokemon = await dbContext.Pokemons.CountAsync(cancellationToken: cancellationToken);
 
         var fetchAblePokemon =
-            await pokeApiService.GetNamedResourcePageAsync<PokemonResponse>(10, 0, cancellationToken);
+            await pokeApiService.GetNamedResourcePageAsync<PokemonResponse>(2000, 0, cancellationToken);
 
         if (nrExistingPokemon != fetchAblePokemon.Results.Count)
         {
             foreach (var pokemonName in fetchAblePokemon.Results)
             {
                 var pokemonResponse =
-                    await pokeApiService.GetResourceAsync<PokemonResponse>(pokemonName, cancellationToken);
+                    await pokeApiService.GetResourceAsync(pokemonName, cancellationToken);
 
                 if (await dbContext.Pokemons.AnyAsync(pokemon => pokemon.Id == pokemonResponse.Id,
                         cancellationToken: cancellationToken))

@@ -7,13 +7,13 @@ public class Pokemon
     [Key]
     public int Id { get; set; }
 
-    public double Height { get; set; } = 0;
+    public double Height { get; set; }
 
-    public double Weight { get; set; } = 0;
+    public double Weight { get; set; }
 
-    public bool IsMale { get; set; } = false;
+    public bool IsMale { get; set; } 
 
-    public bool IsFemale { get; set; } = false;
+    public bool IsFemale { get; set; }
 
     [StringLength(50)]
     public string Species { get; set; } = string.Empty;
@@ -46,6 +46,6 @@ public class Pokemon
     public ushort? HealthPoints { get; set; }
 
     public ICollection<MonMove> Moves { get; set; } = [];
-    
-    public ICollection<MonType> Types { get; set; }
+
+    public ICollection<MonType> Types { get; set; } = [];
 }

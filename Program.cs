@@ -63,9 +63,12 @@ try
 
     if (app.Environment.IsDevelopment())
     {
-        // recreate database and fill with seed data
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
+        if (!context.Monkeys.Any())
+        {
+            // recreate database and fill with seed data
+            context.Database.EnsureDeleted();
+            context.Database.EnsureCreated();
+        }
     }
     else
     {
