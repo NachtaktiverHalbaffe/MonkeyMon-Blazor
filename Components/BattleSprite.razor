@@ -1,0 +1,32 @@
+﻿<div
+    class="@(Class + " "+ _containerClass )"
+    style="@(Style + (Style.Last() != ';' ? ";" : "") + _containerStyle )">
+    <TrimmedImage
+        ImageUrl="@SpriteUrl"
+        Height="@Height"
+        Width="@Width"
+        ObjectFit="ObjectFit.Contain"
+        Alt="Image of pokemon"
+        Style="transform: translateY(-10%)"/>
+</div>
+
+@code {
+    [Parameter] 
+    public string SpriteUrl { get; set; } = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/0.png";
+
+    [Parameter] 
+    public int Width { get; set; } = 96;
+
+    [Parameter]
+    public int Height { get; set; } = 96;
+
+    [Parameter] 
+    public string Style { get; set; } = string.Empty;
+    private const string _containerStyle = "transform: translateY(-20%); aspect-ratio: 1/1; background-image: url(/battle_tile.png); background-size: 100%; background-repeat: no-repeat; background-position-y: 100%";
+
+    [Parameter] 
+    public string Class { get; set; } = string.Empty;
+
+    private const string _containerClass = "d-flex flex-row justify-center align-content-center align-end px-4";
+
+}

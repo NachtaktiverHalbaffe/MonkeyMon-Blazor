@@ -41,18 +41,11 @@ else
                         <MudCardContent>
                             <MudContainer Class="d-flex flex-row align-center px-5">
                                 <MudAvatar
-                                    Style="height: 30vh; width: auto; aspect-ratio: 1 /1; background-image: url(/battle_tile.png);
-                            background-size: 30vh; background-repeat: no-repeat; background-position-y: 75%; background-color: #DFDFDF"
+                                    Style="height: 30vh; width: auto; aspect-ratio: 1 /1; background-color: #DFDFDF"
                                     Class="me-8">
-                                    <TrimmedImage
-                                        ImageUrl="@(pokemon.Sprite?.FrontDefault ?? "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/0.png")"
-                                        Height="150"
-                                        Width="150"
-                                        ObjectFit="ObjectFit.Contain"
-                                        Alt="Image of pokemon"
-                                        Style="transform: translateY(-10%);"/>
+                                    <BattleSprite SpriteUrl="@pokemon.Sprite.FrontDefault" Width="150" Height="150" Style="height: 27vh;"/>
                                 </MudAvatar>
-
+                                
                                 <MudContainer Class="d-flex flex-column" Style="height: 35vh">
                                     <MudText Class="pb-4" Typo="Typo.body1"
                                              Style="color: white; height: 12vh;">
