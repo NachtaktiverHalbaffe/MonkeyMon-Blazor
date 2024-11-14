@@ -1,0 +1,81 @@
+﻿@page "/trimmed-image"
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+@rendermode InteractiveServer
+@attribute [StreamRendering]
+
+
+@if (!isImageLoaded)
+{
+    <MudProgressCircular/>
+}
+<img class="@($"object-{ObjectFit.ToDescriptionString()}")" src="" @ref="imageRef" width="@Width" height="@Height" alt="@Alt" hidden="@(!isImageLoaded)" style="@Style"/>
+
+
+@code {
+    [Parameter] 
+    public string ImageUrl { get; set; } = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/0.png";
+
+    [Parameter] 
+    public int Width { get; set; } = 96;
+
+    [Parameter] 
+    public int Height { get; set; } = 96;
+    
+    [Parameter]
+    public string Alt { get; set; } = string.Empty;
+    
+    [Parameter]
+    [Category(CategoryTypes.ComponentBase.Common)]
+    public string Style { get; set; }
+    
+    [Parameter]
+    [Category(CategoryTypes.Image.Appearance)]
+    public ObjectFit ObjectFit { set; get; } = ObjectFit.Fill;
+
+    private IJSObjectReference? module;
+
+    private ElementReference imageRef;
+    private bool isImageLoaded = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/TrimmedImage.razor.js");
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (module is not null)
+        {
+            await TrimImageAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && module is not null)
+        {
+            await TrimImageAsync();
+        }
+    }
+
+    private async Task TrimImageAsync()
+    {
+        if (module is not null)
+        {
+            isImageLoaded = false;
+            await module.InvokeVoidAsync("trimImage", ImageUrl, imageRef);
+            isImageLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}
