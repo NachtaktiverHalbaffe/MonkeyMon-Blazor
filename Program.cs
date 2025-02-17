@@ -63,7 +63,7 @@ try
 
     if (app.Environment.IsDevelopment())
     {
-        if (!context.Monkeys.Any())
+        if (!context.Monkeys.Any() || !context.Pokemons.Any())
         {
             // recreate database and fill with seed data
             context.Database.EnsureDeleted();

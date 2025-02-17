@@ -2,57 +2,76 @@
 
 <PageTitle>Home</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">Hello, world!</MudText>
-<MudText Class="mb-8">Welcome to your new app, powered by MudBlazor and the .NET 8 Template!</MudText>
-
-<MudAlert Severity="Severity.Normal">
-    You can find documentation and examples on our website here:
-    <MudLink Href="https://mudblazor.com" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        <b>www.mudblazor.com</b>
-    </MudLink>
-</MudAlert>
-
-<br />
-<MudText Typo="Typo.h5" GutterBottom="true">Interactivity in this Template</MudText>
-<br />
-<MudText Typo="Typo.body2">
-    When you opt for the "Global" Interactivity Location, <br />
-    the render modes are defined in App.razor and consequently apply to all child components.<br />
-    In this case, providers are globally set in the MainLayout.<br />
-    <br />
-    On the other hand, if you choose the "Per page/component" Interactivity Location,<br />
-    it is necessary to include the <br />
-    <br />
-    &lt;MudPopoverProvider /&gt; <br />
-    &lt;MudDialogProvider /&gt; <br />
-    &lt;MudSnackbarProvider /&gt; <br />
-    <br />
-    components on every interactive page.<br />
-    <br />
-    If a render mode is not specified for a page, it defaults to Server-Side Rendering (SSR),<br />
-    similar to this page. While MudBlazor allows pages to be rendered in SSR,<br />
-    please note that interactive features, such as buttons and dropdown menus, will not be functional.
+<MudText Typo="Typo.h5" >Was ist Blazor?</MudText>
+<MudText>
+    <ul>
+        <li>Ein Framework von Microsoft für die Erstellung von Webanwendungen mit C# & .NET => Braucht kein Javascript (aber mit JS-Interop trotzdem möglich)</li>
+        <li>Unterstützt SPA (mithilfe einer Webassembly-.NET-Runtime), SSR und eine hybride herangehensweise</li>
+        <li>Hat ähnlich wie Angular für viele Sachen bereits Standardlösungen mitgeliefert oder benutzt .NET-Lösungen (Routing, HTTP-Clients, Data-Persistence, State-Management etc.)</li>
+    </ul>
 </MudText>
 
-<br />
-<MudText Typo="Typo.h5" GutterBottom="true">What's New in Blazor with the Release of .NET 8</MudText>
-<br />
-<MudText Typo="Typo.h6" GutterBottom="true">Prerendering</MudText>
-<MudText Typo="Typo.body2" GutterBottom="true">
-    If you're exploring the features of .NET 8 Blazor,<br /> you might be pleasantly surprised to learn that each page is prerendered on the server,<br /> regardless of the selected render mode.<br /><br />
-    This means that you'll need to inject all necessary services on the server,<br /> even when opting for the wasm (WebAssembly) render mode.<br /><br />
-    This prerendering functionality is crucial to ensuring that WebAssembly mode feels fast and responsive,<br /> especially when it comes to initial page load times.<br /><br />
-    For more information on how to detect prerendering and leverage the RenderContext, you can refer to the following link:
-    <MudLink Href="https://github.com/dotnet/aspnetcore/issues/51468#issuecomment-1783568121" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        More details
-    </MudLink>
+<MudText Typo="Typo.h5" Class="mt-5" >Aufbau</MudText>
+<MudText>
+    <ul>
+        <li>Component-based Architecture, Components werden Razor-Components genannt</li>
+        <li>Components benutzen Standard herangehensweisen (HTML mit Data-Bindings, CSS-Styling), nur das die Logik mit C# anstatt Javascript programmiert wird</li>
+        <li>DataBindings und C#-Markup in CSHTML werden mit @("@()") umgesetzt</li>
+        <li>Man hat die Wahl, ob man die Component in einer einer File oder Angular-Like in mehrere Files aufspaltet</li>
+        <li>Mit Parametern hat man Inputs, mit Cascading Parameters Provider/Context-Inputs und mit EventCallbacks Outputs</li>
+        <li>Components haben fest definierte Lifecycles, wo es Methoden gibt mit denen man sich rein-hooken kann</li>
+        <li>Components werden re-rendered, wenn sich die Parameter ändern oder Variablen ändern, welche das HTML-Markup benutzt</li>
+    </ul>
 </MudText>
 
-<br />
-<MudText Typo="Typo.h6" GutterBottom="true">InteractiveAuto</MudText>
-<MudText Typo="Typo.body2">
-    A discussion on how to achieve this can be found here:
-    <MudLink Href="https://github.com/dotnet/aspnetcore/issues/51468#issue-1950424116" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        More details
-    </MudLink>
+<MudText Typo="Typo.h5" Class="mt-5" >Vorteile/Anwendungsfälle</MudText>
+<MudText>
+    <ul>
+        <li>Klassischen Vorteile von SSR und SPAs gelten hier auch</li>
+        <li>SSR: Wenn man mit SSR eine Fullstack-Anwendung schreibt, hat man ein typsicheres, etabliertes und stabiles Backend/Server-System dahinter</li>
+        <li>Man kann in C# arbeiten => Gut für .NET Entwickler ohne Javascript-Kenntnisse oder Leute, denen Java-/Typescript zuwenig taugt</li>
+        <li>Falls man eine .NET-Backend hat, lassen sich effektiver Full-Stackanwendungen schreiben</li>
+        <li>Mit JS-Interop wäre man theoretisch flexibel genug, immernoch custom Javascript einzubinden</li>
+        <li>Plattform-unabhängig (Web, Desktop mit Electron oder .NET MAUI und Mobile)</li>
+        <li>Persönlich: Struktur der Razor-Components</li>
+        <li>Forms sind einfach umsetzbar</li>
+    </ul>
 </MudText>
+
+<MudText Typo="Typo.h5" Class="mt-5" >Nachteile</MudText>
+<MudText>
+    <ul>
+        <li>Klassischen Nachteile von SSR und SPAs gelten hier auch</li>
+        <li>Webassembly: Größere Bundle-Größe (.NET Runtime hat ca. 6mb) und somit längere Ladezeiten, Nicht ganz so performant wie plain JS (aber sollte in 99% der Fälle nicht bemerkbar sein), Mehr Memory-Usage</li>
+        <li>Blazor-Ökosystem noch nicht so breit ausgebaut, wenig Community-Packages etc.</li>
+        <li>Durch sein vergleichsweise geringes Alter noch nicht so ausgereift wie die lang etablierten Platzhirsche => Ab und zu gibts schon noch komische Eigenheiten z.B. Generic, Quasi-Nullable Parameter</li>
+        <li>Abhängigkeit von .NET-Ökosystem</li>
+        <li>Nicht alle Browser-APIs sind direkt verwendbar und brauchen JS-Interop code</li>
+        <li>Javascript-Packages können eingebunden und verwendet werden, oft aber mit Einschränkungen in Funktionalität und/oder DX (bsp. Tailwind)</li>
+        <li>Hot-Reload funktioniert noch net zuverlässig</li>
+    </ul>
+</MudText>
+
+<MudText Typo="Typo.h5" Class="mt-5" >Erfahrungen/Anekdoten</MudText>
+<MudText>
+    <ul>
+        <li>Angenehme Fullstack-Erfahrung, wenn man in .NET drin ist</li>
+        <li>Es bleibt sehr nah an den etablierten Web-Technologien, ohne das Rad komplett neu zu erfinden (HTML, CSS, Architektur etc.)</li>
+        <li>Wir hatten jetzt nicht mehr Probleme, als wir mit anderen Web-Frameworks auch gehabt hätten</li>
+        <li>Performanz-/Stabilitätsprobleme gabs nicht, wenn dann durch Bad-Code oder durch die Component-Library mit ihren Eigenheiten</li>
+        <li>Manchen Web-APIs (IntersectionObserverApi) oder etablierte JS-Tools (Tailwind), welche sich in JS-Frameworks easy einbinden lassen oder bereits da sind, trauere ich hinterher</li>
+        <li>Ich finde den Ansatz von Blazor interessant und sehe v.a. bei Blazor Webassembly kein anderes Framework, was anderes versucht ohne es mit SSR umzusetzen</li>
+    </ul>
+</MudText>
+
+
+<style>
+    ul {
+        list-style-type: disc;
+        padding-left: 20px; 
+    }
+
+    li {
+        margin-left: 10px; 
+    }
+</style>
